@@ -2,5 +2,9 @@
 build
 sixnetd
 
+# Local planning docs — not for the repo
+plan.md
+todo.md
+
 # macOS
 .DS_Store

@@ -27,32 +27,77 @@ make clean
 
 Requires Go 1.21+.
 
+Build artifacts must not live on a cloud-synced filesystem.
+Use `mkdir-nosync build` to create a symlink to a local path.
+
 ## Socket protocol
 
 Unix socket at `/var/run/sixnetd.sock`. Newline-delimited JSON.
 
-```json
-→ {"cmd":"status"}
-← {"nodeId":"a1b2c3d4e5","daemon":"running","network":{...}}
+### Commands
 
-→ {"cmd":"connect","mode":"vpn"}
-← {"ok":true}
-
-→ {"cmd":"disconnect"}
-← {"ok":true}
 ```
+{"cmd":"status","networkId":"<nwid>"}
+{"cmd":"connect","networkId":"<nwid>","mode":"vpn|lan|exit"}
+{"cmd":"disconnect","networkId":"<nwid>"}
+{"cmd":"join","networkId":"<nwid>"}
+{"cmd":"leave","networkId":"<nwid>"}
+```
+
+### Responses
+
+```json
+{
+  "daemon": "running",
+  "nodeId": "a1b2c3d4e5",
+  "network": {
+    "id": "31655f6ec3a15f6d",
+    "name": "Q1 Office VPN",
+    "status": "OK",
+    "authorized": true,
+    "mode": "vpn",
+    "assignedIP": "10.147.20.42"
+  }
+}
+```
+
+```json
+{"ok": true}
+{"ok": false, "error": "not joined"}
+```
+
+### Connection modes
+
+| Mode  | allowManaged | allowDNS | allowGlobal | allowDefault | Access |
+|-------|-------------|----------|-------------|--------------|--------|
+| `vpn` | true | true | false | false | ZeroTier devices only |
+| `lan` | true | true | true  | false | + office LAN via gateway |
+| `exit`| true | true | true  | true  | + internet via gateway |
+
+### Key file paths
+
+| Path | Purpose |
+|------|---------|
+| `/Library/Application Support/ZeroTier/One/authtoken.secret` | ZeroTier API auth (macOS) |
+| `/var/lib/zerotier-one/authtoken.secret` | ZeroTier API auth (Linux) |
+| `/usr/local/bin/zerotier-cli` | ZeroTier CLI (macOS standard install) |
+| `/var/run/sixnetd.sock` | Unix socket for client connections |
+| `/etc/resolver/<domain>` | macOS DNS resolver config (written on connect) |
 
 ## Installation (macOS)
 
-sixnetd is normally bundled inside `SixnetClient.app` and installed automatically
-on first launch. For manual installation:
+sixnetd is bundled inside `SixnetClient.app` and installed automatically on first
+launch (one admin dialog). For manual installation:
 
 ```bash
-sudo cp build/sixnetd /Library/Application\ Support/Sixnet/sixnetd
-# install LaunchDaemon plist (see packaging/)
+sudo cp build/sixnetd "/Library/Application Support/Sixnet/sixnetd"
+# load LaunchDaemon plist from packaging/
 ```
+
+**Linux:** same binary, packaged as a systemd unit (see `packaging/linux/`).
 
 ## Related
 
-- [sixnet-client](https://github.com/Mr-Chance-Productions-GmbH/sixnet-client) — macOS GUI app
+- [sixnet-client](https://github.com/Mr-Chance-Productions-GmbH/sixnet-client) — macOS GUI app (bundles sixnetd)
 - [sixnet](https://github.com/Mr-Chance-Productions-GmbH/sixnet) — server-side stack
+  - `vpn/zt` — bash reference implementation (the spec for what sixnetd wraps)
