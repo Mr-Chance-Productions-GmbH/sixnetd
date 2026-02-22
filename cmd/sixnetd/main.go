@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/Mr-Chance-Productions-GmbH/sixnetd/internal/socket"
 )
 
 func main() {
@@ -14,10 +16,14 @@ func main() {
 
 	log.Println("sixnetd starting")
 
-	// TODO: start socket server
-	// TODO: start ZeroTier state poller
+	srv := socket.NewServer()
+	if err := srv.Start(); err != nil {
+		log.Fatalf("socket: %v", err)
+	}
+	defer srv.Stop()
 
-	// Wait for signal
+	log.Printf("listening at %s", socket.SocketPath)
+
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	<-sig

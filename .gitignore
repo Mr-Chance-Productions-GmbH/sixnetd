@@ -1,6 +1,5 @@
 # Build output (directory or symlink to nosync location)
 build
-sixnetd
 
 # Local planning docs — not for the repo
 plan.md
