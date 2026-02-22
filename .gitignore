@@ -1,5 +1,6 @@
-# Build output
-build/
+# Build output (directory or symlink to nosync location)
+build
+sixnetd
 
 # macOS
 .DS_Store
