@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -9,10 +10,20 @@ import (
 	"github.com/Mr-Chance-Productions-GmbH/sixnetd/internal/socket"
 )
 
+const version = "0.1.0"
+
 func main() {
-	if os.Getuid() != 0 {
-		log.Fatal("sixnetd must run as root")
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "--version":
+			fmt.Println(version)
+			return
+		default:
+			log.Fatalf("unknown flag: %s", os.Args[1])
+		}
 	}
+
+	requireRoot()
 
 	log.Println("sixnetd starting")
 
@@ -29,4 +40,10 @@ func main() {
 	<-sig
 
 	log.Println("sixnetd stopping")
+}
+
+func requireRoot() {
+	if os.Getuid() != 0 {
+		log.Fatal("sixnetd must run as root")
+	}
 }
