@@ -84,17 +84,30 @@ Unix socket at `/var/run/sixnetd.sock`. Newline-delimited JSON.
 | `/var/run/sixnetd.sock` | Unix socket for client connections |
 | `/etc/resolver/<domain>` | macOS DNS resolver config (written on connect) |
 
-## Installation (macOS)
+## Installation
 
-sixnetd is bundled inside `SixnetClient.app` and installed automatically on first
-launch (one admin dialog). For manual installation:
+Via Homebrew (tap: `Mr-Chance-Productions-GmbH/sixnet`):
 
 ```bash
-sudo cp build/sixnetd "/Library/Application Support/Sixnet/sixnetd"
-# load LaunchDaemon plist from packaging/
+# Daemon only
+brew install Mr-Chance-Productions-GmbH/sixnet/sixnetd
+brew services start sixnetd
+
+# GUI app + daemon (recommended — installs sixnetd as a dependency)
+brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client
 ```
 
-**Linux:** same binary, packaged as a systemd unit (see `packaging/linux/`).
+The GUI app handles `brew services start sixnetd` on first launch via a one-time
+admin dialog. No manual steps needed after the cask install.
+
+**Uninstall:**
+```bash
+brew services stop sixnetd
+brew uninstall --cask sixnet-client
+brew uninstall sixnetd
+```
+
+**Linux:** same formula, `brew services` uses systemd instead of LaunchDaemon.
 
 ## Related
 

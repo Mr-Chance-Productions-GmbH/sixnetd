@@ -56,13 +56,28 @@ Local ZeroTier HTTP API (port 9993, authtoken at known path):
 
 ## Packaging
 
-**macOS:** bundled inside `SixnetClient.app/Contents/MacOS/sixnetd`.
-On first app launch, installed to `/Library/Application Support/Sixnet/sixnetd`
-and registered as a LaunchDaemon at `/Library/LaunchDaemons/de.mcp.sixnet.daemon.plist`.
-The app calls `sixnetd --install` via NSAppleScript for the one-time setup.
+Distribution is via Homebrew — tap at `Mr-Chance-Productions-GmbH/homebrew-sixnet`.
 
-**Linux:** same binary, different packaging (systemd unit). No macOS-specific code
-in the daemon itself — the install mechanism is the only platform-specific part.
+**`brew install Mr-Chance-Productions-GmbH/sixnet/sixnetd`**
+- Builds binary from source into the Cellar, symlinks to `/opt/homebrew/bin/sixnetd`
+- Formula includes a `service` block → `brew services start sixnetd` loads the
+  LaunchDaemon on macOS, a systemd unit on Linux
+- `brew uninstall sixnetd` removes binary and plist cleanly
+
+**`brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client`**
+- Installs sixnetd formula as a dependency (binary arrives automatically)
+- Installs SixnetClient.app to /Applications
+- Homebrew Cask runs `xattr -dr com.apple.quarantine` — no Gatekeeper dialog
+- `brew uninstall --cask sixnet-client` removes the app cleanly
+
+**First-launch flow (in Swift app):**
+1. Check if `/var/run/sixnetd.sock` is alive
+2. If not: show one-time setup screen
+3. Run `brew services start sixnetd` via NSAppleScript — one admin dialog, ever
+4. Daemon is now running and auto-starts at every boot
+
+**No `--install` / `--uninstall` flags in sixnetd** — Homebrew owns the lifecycle.
+`--version` is implemented for debugging and upgrade checks.
 
 ## Related repos
 
