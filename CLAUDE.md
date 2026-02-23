@@ -20,6 +20,12 @@ Without a daemon, every connect/disconnect triggers an OS auth dialog. With sixn
 - All subsequent operations go through the socket — no privilege escalation needed
 - The macOS GUI app, bash wrapper, and any future client are all unprivileged
 
+Running as root is a known constraint, not a preferred design. The better long-term
+model is Apple's NetworkExtension framework (no root, no /etc/resolver/ writes) but
+that requires a paid Apple Developer account and a full rearchitecting effort.
+See `~/projects/six.net/docs/architecture/client-privilege-model.md` for the full
+decision record, constraints, and future path.
+
 ## Reference implementation
 
 `vpn/zt` in `~/projects/six.net` is the bash script this daemon replaces. It is the
