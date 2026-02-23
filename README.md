@@ -89,25 +89,28 @@ Unix socket at `/var/run/sixnetd.sock`. Newline-delimited JSON.
 Via Homebrew (tap: `Mr-Chance-Productions-GmbH/sixnet`):
 
 ```bash
+# GUI app + daemon in one command (recommended)
+brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client
+
 # Daemon only
 brew install Mr-Chance-Productions-GmbH/sixnet/sixnetd
-brew services start sixnetd
-
-# GUI app + daemon (recommended — installs sixnetd as a dependency)
-brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client
 ```
 
-The GUI app handles `brew services start sixnetd` on first launch via a one-time
-admin dialog. No manual steps needed after the cask install.
+No LaunchDaemon, no system integration. The GUI app starts sixnetd on demand
+when it launches. On first launch after a reboot, one admin dialog — that's it.
+
+**To run manually:**
+```bash
+sudo sixnetd
+```
 
 **Uninstall:**
 ```bash
-brew services stop sixnetd
 brew uninstall --cask sixnet-client
 brew uninstall sixnetd
 ```
 
-**Linux:** same formula, `brew services` uses systemd instead of LaunchDaemon.
+No root required for uninstall. No traces left in system directories.
 
 ## Related
 

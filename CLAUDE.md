@@ -66,9 +66,7 @@ Distribution is via Homebrew — tap at `Mr-Chance-Productions-GmbH/homebrew-six
 
 **`brew install Mr-Chance-Productions-GmbH/sixnet/sixnetd`**
 - Builds binary from source into the Cellar, symlinks to `/opt/homebrew/bin/sixnetd`
-- Formula includes a `service` block → `brew services start sixnetd` loads the
-  LaunchDaemon on macOS, a systemd unit on Linux
-- `brew uninstall sixnetd` removes binary and plist cleanly
+- Binary is user-owned — `brew uninstall sixnetd` removes it cleanly, no root needed
 
 **`brew install --cask Mr-Chance-Productions-GmbH/sixnet/sixnet-client`**
 - Installs sixnetd formula as a dependency (binary arrives automatically)
@@ -76,13 +74,24 @@ Distribution is via Homebrew — tap at `Mr-Chance-Productions-GmbH/homebrew-six
 - Homebrew Cask runs `xattr -dr com.apple.quarantine` — no Gatekeeper dialog
 - `brew uninstall --cask sixnet-client` removes the app cleanly
 
-**First-launch flow (in Swift app):**
-1. Check if `/var/run/sixnetd.sock` is alive
-2. If not: show one-time setup screen
-3. Run `brew services start sixnetd` via NSAppleScript — one admin dialog, ever
-4. Daemon is now running and auto-starts at every boot
+**No LaunchDaemon. No system integration. No plist anywhere.**
+The formula installs a binary only. The Swift app starts it on demand.
 
-**No `--install` / `--uninstall` flags in sixnetd** — Homebrew owns the lifecycle.
+**Daemon lifecycle:**
+- App launches → checks if socket `/var/run/sixnetd.sock` is alive
+- If not: runs `sudo /opt/homebrew/bin/sixnetd` via NSAppleScript — one admin dialog
+- Daemon keeps running when the app quits — VPN stays connected
+- Next app launch → socket still alive → no dialog
+- After reboot → first app launch → one admin dialog again
+
+**Uninstall (from app menu or CLI):**
+```bash
+brew uninstall --cask sixnet-client
+brew uninstall sixnetd
+```
+No root required. The running daemon process exits on next reboot or can be
+killed manually. No traces left in `/Library/` or anywhere system-level.
+
 `--version` is implemented for debugging and upgrade checks.
 
 ## Related repos
