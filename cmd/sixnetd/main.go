@@ -10,7 +10,7 @@ import (
 	"github.com/Mr-Chance-Productions-GmbH/sixnetd/internal/socket"
 )
 
-const version = "0.1.0"
+var version = "dev"
 
 func main() {
 	if len(os.Args) > 1 {
