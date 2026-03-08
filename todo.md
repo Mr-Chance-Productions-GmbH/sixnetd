@@ -29,10 +29,10 @@
 
 New repo: `Mr-Chance-Productions-GmbH/homebrew-sixnet` (tap)
 
-- [x] `sixnetd --version` flag — prints `0.1.0`, tested
-- [x] Tag v0.1.0 on sixnetd GitHub — source tarball URL needed by formula
-- [x] Formula: `Formula/sixnetd.rb` — builds from source, binary only, no service block
-- [x] Cask: `Casks/sixnet-client.rb` — stub, declares sixnetd as dependency
+- [x] `sixnetd --version` flag — version injected via ldflags at build time; source defaults to "dev"
+- [x] Tag v0.2.0 on sixnetd GitHub — source tarball URL needed by formula
+- [x] Formula: `Formula/sixnetd.rb` — builds from source, binary only, no service block, ldflags version
+- [x] Cask: `Casks/sixnet-client.rb` — stub, declares sixnetd as dependency (cask pending .app release)
 - [x] Test: `brew install Mr-Chance-Productions-GmbH/sixnet/sixnetd` → builds, installs
 - [x] Test: `brew test sixnetd` → --version passes
 - [x] Test: `sudo sixnetd` → daemon starts, socket responds
@@ -52,15 +52,14 @@ New repo: `Mr-Chance-Productions-GmbH/homebrew-sixnet` (tap)
 - [x] smoke test: Disconnect → orange dot, DNS removed, ping stops
 - [x] smoke test: reconnect cycle verified
 
-## Phase 6 — Onboarding flow (design session needed)
+## Phase 6 — Mode 2 PKCE enrollment ✓ (in sixnet-client)
 
-Design: TBD with explicit UI session
+- [x] OIDC discovery, PKCE generation, system browser open, localhost:12345 callback
+- [x] Token exchange + POST /claim with id_token
+- [x] Auto-join on success; user presses Connect to choose mode
+- [x] Onboarding flow emerges naturally from UI state machine — no separate wizard needed
 
-- [ ] Step 1: Add Network (URL → fetch config → join → show node ID)
-- [ ] Step 2: Enrollment prompt (open portal URL in browser, wait for auth)
-- [ ] Step 3: Connect (first connection after authorization)
+## Phase 7 — /client.json endpoint ✓ (in six.net enroll app)
 
-## Phase 7 — config.json endpoint on enrollment app
-
-- [ ] `GET /client.json` on enrollment app → serves networkId, name, enrollUrl
-- [ ] (currently: mock with static file during development)
+- [x] `GET /client.json` → networkId, name, enrollUrl, issuer, clientId
+- [x] Fetched by AddNetworkView when user pastes enrollment URL

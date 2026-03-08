@@ -1,8 +1,10 @@
 # Plan
 
-## Current focus: Phase 6 — Onboarding flow (design session needed)
+## Current focus: Distribution (cask completion + first real-user deployment)
 
-Phases 1, 2, 4, and 5 are complete and smoke-tested.
+Phases 1–7 are complete. sixnetd is stable and fully integrated with the Swift client.
+Next: build and release the sixnet-client .app so the Homebrew cask can be completed
+and real users can install via `brew install --cask sixnet-client`.
 
 ## What works
 
@@ -50,8 +52,9 @@ Daemon pushes state changes to connected clients. Swift app becomes event-driven
 
 **Phase 4 — Homebrew packaging** ✓ done
 Formula (binary only, no service block) + cask stub in tap `Mr-Chance-Productions-GmbH/sixnet`.
-`brew install --cask sixnet-client` installs everything. App starts daemon on demand via
-NSAppleScript. No LaunchDaemon, no system integration, clean uninstall without root.
+Version injected via ldflags at build time (`-X main.version=#{version}`); source defaults to "dev".
+App starts daemon on demand via NSAppleScript. No LaunchDaemon, no system integration,
+clean uninstall without root.
 
 **Phase 5 — Swift integration** ✓ done
 Multi-network model. DaemonClient (POSIX Unix socket, 5s polling, per-network state).
@@ -60,10 +63,13 @@ AddNetworkView modal sheet: user pastes enrollment URL → client fetches `clien
 status dot, mode, IP, join/connect/disconnect. Exit-mode conflict handling.
 Smoke-tested: add → connect (DNS resolves, ping) → disconnect → reconnect.
 
-**Phase 6 — Onboarding flow** ← current (design session needed)
-Guided first-use: add network → join → show node ID → open enrollment portal →
-wait for authorization → connect. TBD with explicit UI design session.
+**Phase 6 — Mode 2 PKCE enrollment** ✓ done (in sixnet-client)
+Device-initiated OAuth PKCE flow. Client fetches OIDC discovery, opens system browser,
+catches callback on localhost:12345, exchanges code for id_token, POSTs to /claim.
+On success: auto-joins the ZeroTier network, shows "Enrolled — ready to connect".
+User then presses Connect in the menu bar to choose mode (vpn/lan/exit).
+Onboarding flow emerges naturally from the UI state machine — no separate wizard needed.
 
-**Phase 7 — config.json endpoint on enrollment app**
-`GET /client.json` on the enrollment server returns networkId, name, enrollUrl.
-Currently mocked with a static file during development.
+**Phase 7 — /client.json endpoint** ✓ done (in six.net enroll app)
+`GET /client.json` on the enrollment server returns networkId, name, enrollUrl, issuer, clientId.
+Fetched by AddNetworkView when user pastes the enrollment URL.
