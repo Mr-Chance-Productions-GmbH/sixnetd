@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Build universal binary
+        run: |
+          GOOS=darwin GOARCH=arm64 go build \
+            -ldflags "-X main.version=${{ env.VERSION }}" \
+            -o build/sixnetd-arm64 ./cmd/sixnetd
+          GOOS=darwin GOARCH=amd64 go build \
+            -ldflags "-X main.version=${{ env.VERSION }}" \
+            -o build/sixnetd-amd64 ./cmd/sixnetd
+          lipo -create -output build/sixnetd build/sixnetd-arm64 build/sixnetd-amd64
+
+      - name: Package tarball
+        run: |
+          cd build
+          tar -czf sixnetd-${{ env.VERSION }}.tar.gz sixnetd
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "sixnetd ${{ github.ref_name }}" \
+            --generate-notes \
+            "build/sixnetd-${{ env.VERSION }}.tar.gz"
+
+      - name: Update Homebrew formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION=${{ env.VERSION }}
+          SHA=$(shasum -a 256 "build/sixnetd-${VERSION}.tar.gz" | cut -d' ' -f1)
+
+          git clone \
+            https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/Mr-Chance-Productions-GmbH/homebrew-sixnet.git
+
+          bash scripts/write-formula.sh "$VERSION" "$SHA" homebrew-sixnet/Formula/sixnetd.rb
+
+          cd homebrew-sixnet
+          git config user.email "ci@github.com"
+          git config user.name "GitHub Actions"
+          git add Formula/sixnetd.rb
+          git commit -m "sixnetd ${VERSION}"
+          git push
