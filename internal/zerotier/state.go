@@ -21,18 +21,19 @@ const (
 
 // NetworkState is the full state of a single ZeroTier network membership.
 type NetworkState struct {
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Status       string      `json:"status"` // OK, ACCESS_DENIED, NOT_FOUND, ...
-	Authorized   bool        `json:"authorized"`
-	Mode         NetworkMode `json:"mode"`
-	AssignedIP   string      `json:"assignedIP,omitempty"`
-	AllowDNS     bool        `json:"allowDNS"`
-	AllowManaged bool        `json:"allowManaged"`
-	AllowGlobal  bool        `json:"allowGlobal"`
-	AllowDefault bool        `json:"allowDefault"`
-	DNSDomain    string      `json:"dnsDomain,omitempty"`
-	DNSServer    string      `json:"dnsServer,omitempty"`
+	ID             string      `json:"id"`
+	Name           string      `json:"name"`
+	Status         string      `json:"status"` // OK, ACCESS_DENIED, NOT_FOUND, ...
+	Authorized     bool        `json:"authorized"`
+	Mode           NetworkMode `json:"mode"`
+	AssignedIP     string      `json:"assignedIP,omitempty"`
+	AllowDNS       bool        `json:"allowDNS"`
+	AllowManaged   bool        `json:"allowManaged"`
+	AllowGlobal    bool        `json:"allowGlobal"`
+	AllowDefault   bool        `json:"allowDefault"`
+	DNSDomain      string      `json:"dnsDomain,omitempty"`
+	DNSServer      string      `json:"dnsServer,omitempty"`
+	AvailableModes []string    `json:"availableModes"`
 }
 
 // State is the full snapshot returned to clients on a status request.

@@ -129,20 +129,53 @@ func (c *Client) NodeStatus() (nodeID, version string, err error) {
 	return s.Address, s.Version, nil
 }
 
+// ztRoute mirrors a single entry from the ZeroTier network routes array.
+type ztRoute struct {
+	Target string  `json:"target"`
+	Via    *string `json:"via"`
+}
+
 // ztNetwork mirrors the relevant fields from GET /network/<nwid>
 type ztNetwork struct {
-	ID                string   `json:"id"`
-	Name              string   `json:"name"`
-	Status            string   `json:"status"`
-	AssignedAddresses []string `json:"assignedAddresses"`
-	AllowDNS          bool     `json:"allowDNS"`
-	AllowManaged      bool     `json:"allowManaged"`
-	AllowGlobal       bool     `json:"allowGlobal"`
-	AllowDefault      bool     `json:"allowDefault"`
+	ID                string    `json:"id"`
+	Name              string    `json:"name"`
+	Status            string    `json:"status"`
+	AssignedAddresses []string  `json:"assignedAddresses"`
+	AllowDNS          bool      `json:"allowDNS"`
+	AllowManaged      bool      `json:"allowManaged"`
+	AllowGlobal       bool      `json:"allowGlobal"`
+	AllowDefault      bool      `json:"allowDefault"`
+	Routes            []ztRoute `json:"routes"`
 	DNS               struct {
 		Domain  string   `json:"domain"`
 		Servers []string `json:"servers"`
 	} `json:"dns"`
+}
+
+// deriveAvailableModes inspects pushed routes to determine which connection
+// modes are supported by this network's configuration.
+//
+//   - vpn:  always available (basic ZeroTier connectivity)
+//   - lan:  a non-default route with a gateway (via != null) exists
+//   - exit: a default route (0.0.0.0/0) exists
+func deriveAvailableModes(routes []ztRoute) []string {
+	modes := []string{"vpn"}
+	hasLAN := false
+	hasExit := false
+	for _, r := range routes {
+		if r.Target == "0.0.0.0/0" {
+			hasExit = true
+		} else if r.Via != nil {
+			hasLAN = true
+		}
+	}
+	if hasLAN {
+		modes = append(modes, "lan")
+	}
+	if hasExit {
+		modes = append(modes, "exit")
+	}
+	return modes
 }
 
 // JoinNetwork tells ZeroTier to join a network.
@@ -168,16 +201,17 @@ func (c *Client) NetworkState(networkID string) (*NetworkState, error) {
 	}
 
 	ns := &NetworkState{
-		ID:           n.ID,
-		Name:         n.Name,
-		Status:       n.Status,
-		Authorized:   n.Status == "OK",
-		AllowDNS:     n.AllowDNS,
-		AllowManaged: n.AllowManaged,
-		AllowGlobal:  n.AllowGlobal,
-		AllowDefault: n.AllowDefault,
-		Mode:         DeriveMode(n.AllowManaged, n.AllowDNS, n.AllowGlobal, n.AllowDefault),
-		DNSDomain:    n.DNS.Domain,
+		ID:             n.ID,
+		Name:           n.Name,
+		Status:         n.Status,
+		Authorized:     n.Status == "OK",
+		AllowDNS:       n.AllowDNS,
+		AllowManaged:   n.AllowManaged,
+		AllowGlobal:    n.AllowGlobal,
+		AllowDefault:   n.AllowDefault,
+		Mode:           DeriveMode(n.AllowManaged, n.AllowDNS, n.AllowGlobal, n.AllowDefault),
+		DNSDomain:      n.DNS.Domain,
+		AvailableModes: deriveAvailableModes(n.Routes),
 	}
 
 	if len(n.DNS.Servers) > 0 {
