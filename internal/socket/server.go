@@ -16,10 +16,11 @@ const SocketPath = "/var/run/sixnetd.sock"
 // Server listens on the Unix socket and dispatches JSON requests.
 type Server struct {
 	listener net.Listener
+	version  string
 }
 
-func NewServer() *Server {
-	return &Server{}
+func NewServer(version string) *Server {
+	return &Server{version: version}
 }
 
 func (s *Server) Start() error {
@@ -193,6 +194,7 @@ func (s *Server) handleStatus(req Request) Response {
 	resp.Daemon = string(zerotier.StatusRunning)
 	resp.NodeID = nodeID
 	resp.Version = version
+	resp.SixnetdVersion = s.version
 
 	if req.NetworkID != "" {
 		ns, err := client.NetworkState(req.NetworkID)

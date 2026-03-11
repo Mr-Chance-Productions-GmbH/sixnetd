@@ -27,7 +27,7 @@ func main() {
 
 	log.Println("sixnetd starting")
 
-	srv := socket.NewServer()
+	srv := socket.NewServer(version)
 	if err := srv.Start(); err != nil {
 		log.Fatalf("socket: %v", err)
 	}

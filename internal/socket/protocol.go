@@ -18,10 +18,11 @@ type Response struct {
 	Error string `json:"error,omitempty"`
 
 	// status response fields
-	Daemon  string                 `json:"daemon,omitempty"`
-	NodeID  string                 `json:"nodeId,omitempty"`
-	Version string                 `json:"version,omitempty"`
-	Network *zerotier.NetworkState `json:"network,omitempty"`
+	Daemon          string                 `json:"daemon,omitempty"`
+	NodeID          string                 `json:"nodeId,omitempty"`
+	Version         string                 `json:"version,omitempty"`   // ZeroTier version
+	SixnetdVersion  string                 `json:"sixnetdVersion,omitempty"`
+	Network         *zerotier.NetworkState `json:"network,omitempty"`
 }
 
 func errResponse(msg string) Response {
