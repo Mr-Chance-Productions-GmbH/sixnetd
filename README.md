@@ -30,6 +30,21 @@ Requires Go 1.21+.
 Build artifacts must not live on a cloud-synced filesystem.
 Use `mkdir-nosync build` to create a symlink to a local path.
 
+## Releases
+
+Tag a version to trigger the CI release pipeline:
+
+```bash
+git tag v0.3.0
+git push github v0.3.0
+```
+
+CI builds a universal macOS binary (arm64 + amd64), creates a GitHub release,
+and updates the `sixnetd` formula in the homebrew-sixnet tap automatically.
+Requires `HOMEBREW_TAP_TOKEN` secret in the repo settings.
+
+The formula in the tap is never edited manually.
+
 ## Socket protocol
 
 Unix socket at `/var/run/sixnetd.sock`. Newline-delimited JSON.
@@ -50,16 +65,23 @@ Unix socket at `/var/run/sixnetd.sock`. Newline-delimited JSON.
 {
   "daemon": "running",
   "nodeId": "a1b2c3d4e5",
+  "sixnetdVersion": "0.3.0",
+  "version": "1.16.1",
   "network": {
     "id": "31655f6ec3a15f6d",
     "name": "Q1 Office VPN",
     "status": "OK",
     "authorized": true,
     "mode": "vpn",
-    "assignedIP": "10.147.20.42"
+    "assignedIP": "10.147.20.42",
+    "availableModes": ["vpn", "lan", "exit"]
   }
 }
 ```
+
+`sixnetdVersion` is the daemon's own version. `version` is the ZeroTier version.
+`availableModes` is derived from routes pushed by the ZeroTier controller —
+`lan` and `exit` only appear if the server has configured the corresponding routes.
 
 ```json
 {"ok": true}
